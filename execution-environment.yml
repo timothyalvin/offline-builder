@@ -1,0 +1,26 @@
+---
+version: 3
+dependencies:
+  galaxy: requirements.yml
+images:
+  base_image:
+    name: hub.lab.example.com/ee-minimal-rhel8:latest
+additional_build_files:
+  - src: /etc/pki/ca-trust/source/anchors/classroom-ca.pem
+    dest: certs
+  - src: ansible.cfg
+    dest: config
+  - src: pip.conf
+    dest: config
+  - src: rhel-dvd.repo
+    dest: config
+additional_build_steps:
+  prepend_galaxy:
+    - COPY _build/certs/classroom-ca.pem /etc/pki/ca-trust/source/anchors
+    - RUN update-ca-trust
+    - COPY _build/config/ansible.cfg /etc/ansible/ansible.cfg
+  prepend_base:
+    - COPY _build/config/pip.conf /etc/pip.conf
+    - RUN rm -f /etc/yum.repos.d/*.repo
+    - COPY _build/config/rhel-dvd.repo /etc/yum.repos.d/rhel-dvd.repo
+    - RUN mkdir /var/lib/rhsm
